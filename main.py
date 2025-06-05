@@ -1,5 +1,8 @@
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from keep_alive import keep_alive
+
+keep_alive()
 from flask import Flask
 import threading
 
