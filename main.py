@@ -1,15 +1,12 @@
 import telebot
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
 from keep_alive import keep_alive
 
-keep_alive()
-from flask import Flask
-import threading
-
-TOKEN = "7977910185:AAGUKUbL1gGflrwYn4ZmDMn0V0CXeoN0XIg"  # <-- এখানে আপনার বটের টোকেন বসান
+# আপনার টেলিগ্রাম বট টোকেন
+TOKEN = "7977910185:AAGUKUbL1gGflrwYn4ZmDMn0V0CXeoN0XIg"
 bot = telebot.TeleBot(TOKEN)
 
-# Agreement Start Message
+# Start command
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     agreement = """🛡️ *Agreement*
@@ -27,7 +24,7 @@ def send_welcome(message):
 
 @bot.callback_query_handler(func=lambda call: call.data == "agree")
 def agreement_accepted(call):
-    welcome_msg = f"""🤖 *Welcome to CYBER SECURITY BD*
+    welcome_msg = """🤖 *Welcome to CYBER SECURITY BD*
 
 আমরা টেলিগ্রামে নিরাপদ এবং সচেতন কমিউনিটি গঠনে কাজ করছি।
 """
@@ -37,6 +34,7 @@ def agreement_accepted(call):
     markup.add("SUPPORT TEAM")
     bot.send_message(call.message.chat.id, welcome_msg, parse_mode="Markdown", reply_markup=markup)
 
+# MY PROFILE
 @bot.message_handler(func=lambda message: message.text == "MY PROFILE")
 def my_profile(message):
     profile_text = f"""👤 *Your Profile Info*
@@ -49,6 +47,7 @@ def my_profile(message):
     """
     bot.send_message(message.chat.id, profile_text, parse_mode="Markdown")
 
+# SERVICE
 @bot.message_handler(func=lambda message: message.text == "SERVICE")
 def service_info(message):
     service_text = "🇧🇩 বাংলাদেশের সকল সেবা সমূহ নিচে উল্লেখ রয়েছে:"
@@ -61,6 +60,7 @@ def service_info(message):
     markup.add(InlineKeyboardButton("🔐 ডিজিটাল নিরাপত্তা হেল্পলাইন (105)", url="tel:105"))
     bot.send_message(message.chat.id, service_text, reply_markup=markup)
 
+# POLICY
 @bot.message_handler(func=lambda message: message.text == "POLICY")
 def policy_info(message):
     text = """🔍 Collaborating with cyber police to detect, report, and remove:
@@ -73,7 +73,7 @@ Dedicated to making Telegram a safer place for everyone.
     """
     bot.send_message(message.chat.id, text)
 
-# Submit Info Workflow
+# SUBMIT INFORMATION
 user_reports = {}
 
 @bot.message_handler(func=lambda message: message.text == "SUBMIT INFORMATION")
@@ -89,11 +89,10 @@ def get_group_link(message):
 @bot.message_handler(func=lambda message: message.chat.id in user_reports and "complaint" not in user_reports[message.chat.id])
 def get_complaint(message):
     user_reports[message.chat.id]["complaint"] = message.text
-    name = message.from_user.first_name
-    user_reports[message.chat.id]["name"] = name
-    bot.send_message(message.chat.id, "📨 তথ্য জমা দেওয়ার জন্য নিচের বাটনে ক্লিক করুন।", reply_markup=InlineKeyboardMarkup().add(
-        InlineKeyboardButton("✅ তথ্য জমা দিন", callback_data="submit_info")
-    ))
+    user_reports[message.chat.id]["name"] = message.from_user.first_name
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("✅ তথ্য জমা দিন", callback_data="submit_info"))
+    bot.send_message(message.chat.id, "📨 তথ্য জমা দেওয়ার জন্য নিচের বাটনে ক্লিক করুন।", reply_markup=markup)
 
 @bot.callback_query_handler(func=lambda call: call.data == "submit_info")
 def submit_final(call):
@@ -105,14 +104,12 @@ def submit_final(call):
 📝 অভিযোগ: {data.get("complaint")}
 🆔 ইউজার আইডি: {call.from_user.id}
 """
-    # অ্যাডমিন চ্যাট আইডি দিয়ে এখানে রিপোর্ট পাঠান (example: -1001234567890)
-    admin_chat_id = "6243881362"
+    admin_chat_id = "6243881362"  # <-- এখানে অ্যাডমিনের চ্যাট আইডি বসান
     bot.send_message(admin_chat_id, report_message, parse_mode="Markdown")
-
     bot.send_message(call.message.chat.id, "✅ ধন্যবাদ! তথ্য দিয়ে সাহায্য করার জন্য। আপনার তথ্য সঠিক হলে আমরা দ্রুত Action নিব ।")
-
     del user_reports[call.message.chat.id]
 
+# SUPPORT TEAM
 @bot.message_handler(func=lambda message: message.text == "SUPPORT TEAM")
 def support_team(message):
     support_msg = """🤖 *Cyber Security BD Support Team*
@@ -131,20 +128,6 @@ Thank you for helping make Telegram safer! 💙
     markup.add(InlineKeyboardButton("📩 CONTACT NOW", url="https://t.me/Swygen_bd"))
     bot.send_message(message.chat.id, support_msg, parse_mode="Markdown", reply_markup=markup)
 
-# Keep Alive
-app = Flask('')
-
-@app.route('/')
-def home():
-    return "Bot is running!"
-
-def run():
-    app.run(host='0.0.0.0', port=8080)
-
-def keep_alive():
-    thread = threading.Thread(target=run)
-    thread.start()
-
-# Start the bot
+# ✅ Start Keep Alive + Bot Polling
 keep_alive()
-bot.polling()
+bot.polling(none_stop=True)
